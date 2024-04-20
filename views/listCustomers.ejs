@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <%- include('partials/header1.ejs') %>
+    </head>
+    <body>
+        <%- include('partials/navbar1.ejs') %>
+        <div class="container">
+            <h2>List of GardenGrocer Customers</h2>
+            <br>
+            <br>
+            <table>
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th style="width: 100px;">Name</th>
+                    <th style="width: 150px;">Phone</th>
+                    <th style="width: 100px;">Balance</th>
+                </tr>
+
+                <% if (CustomersData.length !=0) {var i=1; CustomersData.forEach( function(data) {
+                %>
+                <tr>
+                    <td><%=data.id %></td>
+                    <td><%=data.name %></td>
+                    <td><%=data.phone %></td>
+                    <td><%=data.balance %></td>
+                </tr>
+                <% i++; }) %> <%}%>
+            </table>
+        </div>
+    </body>
+</html>

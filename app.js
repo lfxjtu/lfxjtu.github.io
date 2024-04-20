@@ -50,11 +50,25 @@ app.get('/membersOnly', function (req,res, next) {
         res.send('Please login to view this page!');
     }
 });
+
+app.get('/listCustomers', function(req,res){
+    conn.query("SELECT * FROM customers", function (err, result) {
+        if  (err)throw err;
+        console.log(result);
+        res.render('listCustomers', { title: 'List of GG customers', CustomersData: result});
+    });
+});
 app.get('/fruit', function (req, res){
     res.render("fruit");
 });
 app.get('/vegetables', function (req, res){
     res.render("vegetables");
 });
+
+app.get('/logout',(req,res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
+
 app.listen(3000);
 console.log('Node app is running on port 3000');
