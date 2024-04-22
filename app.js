@@ -24,7 +24,7 @@ app.post('/auth', function(req, res){
     let name = req.body.username;
     let password = req.body.password;
     if (name && password) {
-        conn.query('SELECT * FROM customers WHERE name = ? AND password = ?', [name,password],
+        conn.query('SELECT * FROM admin WHERE name = ? AND password = ?', [name,password],
         function(error, results, fields) {
             if (error) throw error;
             if ( results.length > 0) {
@@ -44,13 +44,36 @@ app.post('/auth', function(req, res){
 // Users can access this if they are logged in
 app.get('/membersOnly', function (req,res, next) {
     if (req.session.loggedin) {
-        res.render('membersOnly');
+        res.render('membersOnly', {
+            username: req.session.username
+        });
     }
     else {
         res.send('Please login to view this page!');
     }
 });
 
+app.get('/addCustomers', function (req,res, next) {
+    if (req.session.loggedin) {
+        res.render('addCustomers');
+    }
+    else {
+        res.send('Please login to view this page!');
+    }
+});
+app.post('/addCustomers', function(req,res,next) {
+    var id = req.body.id;
+    var name = req.body.name;
+    var password = req.body.password;
+    var phone = req.body.phone;
+    var balance = req.body.balance;
+    var sql = `INSERT INTO customers (id, name, password, phone, balance) VALUES ("${id}", "${name}", "${password}", "${phone}", "${balance}")`;
+    conn.query(sql, function(err,result) {
+        if (err) throw err;
+        console.log( 'record inserted');
+        res.render('addCustomers');
+    });
+});
 app.get('/listCustomers', function(req,res){
     conn.query("SELECT * FROM customers", function (err, result) {
         if  (err)throw err;
@@ -58,11 +81,12 @@ app.get('/listCustomers', function(req,res){
         res.render('listCustomers', { title: 'List of GG customers', CustomersData: result});
     });
 });
-app.get('/fruit', function (req, res){
-    res.render("fruit");
-});
-app.get('/vegetables', function (req, res){
-    res.render("vegetables");
+app.get('/products', function (req, res){
+    conn.query("SELECT * FROM products", function (err, result) {
+        if  (err)throw err;
+        console.log(result);
+        res.render('products', { title: 'List of GG products', ProductsData: result});
+    });
 });
 
 app.get('/logout',(req,res) => {

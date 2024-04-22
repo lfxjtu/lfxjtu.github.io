@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <%- include('partials/header1.ejs') %>
+    </head>
+    <body>
+        <%- include('partials/navbar2.ejs') %>
+        <div class="container">
+            <h1>Add a Customer</h1>
+            <form method="POST">
+                <label style="width: 100px;" for="id"> ID</label>
+                <input type="text" id="id" placeholder="Enter Customer's ID" name="id">
+                <br>
+                <br>
+                <label style="width: 100px;" for="name"> Name</label>
+                <input type="text" id="name" placeholder="Enter Customer's name" name="name">
+                <br>
+                <br>
+                <label style="width: 100px;" for="password"> Password</label>
+                <input type="text" id="password" placeholder="Enter password" name="password">
+                <br>
+                <br>
+                <label style="width: 100px;" for="phone"> phone</label>
+                <input type="text" id="phone" placeholder="Enter phone number" name="phone">
+                <br>
+                <br>
+                <label style="width: 100px;" for="balance"> balance</label>
+                <input type="text" id="balance" placeholder="Enter blance" name="balance">
+                <br>
+                <br>
+                <button type="submit">Submit</button>
+                <br>
+            </form>
+        </div>
+    </body>
+</html>
