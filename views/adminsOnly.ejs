@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <%- include('partials/header1.ejs') %> 
+    </head>
+    <body>
+        <%- include('partials/navbar2.ejs') %>
+            <h1 style="color:red">Administrators only page.</h1>
+            <p style="color:blue">
+            Welcome 
+            <strong><%= username %> </strong> to a admins only page. You are now logged in.
+            </p>
+            As an administrator, you can mange all the customers, including: 
+            <ul><a href="/listCustomers">list all the customers</a></ul>
+            <ul><a href="/addcustomers">add a customer</a></ul>
+            <ul><a href="/updatecustomers">update an existing customer</a></ul>
+            <ul><a href="/deletecustomers">delete an existing customer!!</a></ul>
+    </body>
+</html>

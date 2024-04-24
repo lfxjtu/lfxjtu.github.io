@@ -1,8 +1,13 @@
-var express = require('express');
-var app = express();
-var session = require('express-session');
-var conn = require('./dbConfig');
-app.set('view engine','ejs');
+const express = require('express');
+const session = require('express-session');
+const conn = require('./dbConfig');
+
+const app = express();
+
+// Middleware
+app.set('view engine', 'ejs');
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
     secret: 'yoursecret',
     resave: true,
@@ -10,89 +15,108 @@ app.use(session({
 }));
 app.use('/public', express.static('public'));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middleware for authentication
+const authenticate = (req, res, next) => {
+    if (req.session.loggedin) {
+        next();
+    } else {
+        res.send('Please login to view this page!');
+    }
+};
 
-app.get('/', function (req,res){
+// Routes
+app.get('/', (req, res) => {
     res.render("home");
 });
-app.get('/login', function(req, res) {
+
+app.get('/login', (req, res) => {
     res.render('login.ejs');
 });
  
-app.post('/auth', function(req, res){
-    let name = req.body.username;
-    let password = req.body.password;
+app.post('/auth', (req, res) => {
+    const name = req.body.username;
+    const password = req.body.password;
+    
     if (name && password) {
-        conn.query('SELECT * FROM admin WHERE name = ? AND password = ?', [name,password],
-        function(error, results, fields) {
+        conn.query('SELECT * FROM admin WHERE name = ? AND password = ?', [name, password], (error, results, fields) => {
             if (error) throw error;
-            if ( results.length > 0) {
+            if (results.length > 0) {
                 req.session.loggedin = true;
                 req.session.username = name;
-                res.redirect('/membersOnly');
+                res.redirect('/adminsOnly');
             } else {
                 res.send('Incorrect Username and/or Password!');
             }
-            res.end();
         });
     } else {
-        res.send('Please enter Usename and Password!');
-        res.end();
+        res.send('Please enter Username and Password!');
     }
 });
+
 // Users can access this if they are logged in
-app.get('/membersOnly', function (req,res, next) {
-    if (req.session.loggedin) {
-        res.render('membersOnly', {
-            username: req.session.username
-        });
-    }
-    else {
-        res.send('Please login to view this page!');
-    }
+app.get('/adminsOnly', authenticate, (req, res) => {
+    res.render('adminsOnly', {
+        username: req.session.username
+    });
 });
 
-app.get('/addCustomers', function (req,res, next) {
-    if (req.session.loggedin) {
-        res.render('addCustomers');
-    }
-    else {
-        res.send('Please login to view this page!');
-    }
+// Add Customers module
+app.get('/addCustomers', authenticate, (req, res) => {
+    res.render('addCustomers');
 });
-app.post('/addCustomers', function(req,res,next) {
-    var id = req.body.id;
-    var name = req.body.name;
-    var password = req.body.password;
-    var phone = req.body.phone;
-    var balance = req.body.balance;
-    var sql = `INSERT INTO customers (id, name, password, phone, balance) VALUES ("${id}", "${name}", "${password}", "${phone}", "${balance}")`;
-    conn.query(sql, function(err,result) {
+
+app.post('/addCustomers', authenticate, (req, res) => {
+    const { id, name, password, phone, balance } = req.body;
+    const sql = `INSERT INTO customers (id, name, password, phone, balance) VALUES (?, ?, ?, ?, ?)`;
+    conn.query(sql, [id, name, password, phone, balance], (err, result) => {
         if (err) throw err;
-        console.log( 'record inserted');
-        res.render('addCustomers');
-    });
-});
-app.get('/listCustomers', function(req,res){
-    conn.query("SELECT * FROM customers", function (err, result) {
-        if  (err)throw err;
-        console.log(result);
-        res.render('listCustomers', { title: 'List of GG customers', CustomersData: result});
-    });
-});
-app.get('/products', function (req, res){
-    conn.query("SELECT * FROM products", function (err, result) {
-        if  (err)throw err;
-        console.log(result);
-        res.render('products', { title: 'List of GG products', ProductsData: result});
+        console.log('record inserted');
+        res.redirect('listCustomers');
     });
 });
 
-app.get('/logout',(req,res) => {
+// Update a customer module
+app.get('/updateCustomers', authenticate, (req, res) => {
+    res.render('updateCustomers');
+});
+
+app.post('/updateCustomers', authenticate, (req, res) => {
+    const { id, name, password, phone, balance } = req.body;
+    const sql = `UPDATE customers SET name = ?, password = ?, phone = ?, balance = ? WHERE id = ?`;
+    conn.query(sql, [name, password, phone, balance, id], (err, result) => {
+        if (err) throw err;
+        console.log('record updated');
+        res.redirect('listCustomers');
+    });
+});
+
+app.get('/listCustomers', authenticate, (req, res) => {
+    conn.query("SELECT * FROM customers", (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.render('listCustomers', { title: 'List of GG customers', CustomersData: result });
+    });
+});
+
+app.get('/products', (req, res) => {
+    conn.query("SELECT * FROM products", (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.render('products', { title: 'List of GG products', ProductsData: result });
+    });
+});
+
+app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
 });
 
-app.listen(3000);
-console.log('Node app is running on port 3000');
+// Error handling
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+app.listen(3000, () => {
+    console.log('Node app is running on port 3000');
+});
