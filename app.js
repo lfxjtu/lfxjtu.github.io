@@ -76,8 +76,16 @@ app.post('/addCustomers', authenticate, (req, res) => {
 });
 
 // Update a customer module
-app.get('/updateCustomers', authenticate, (req, res) => {
-    res.render('updateCustomers');
+app.get('/updateCustomers', function (req, res, next) {
+    if (req.session.loggedin) {
+        let customerId = req.query.id;
+        conn.query("SELECT * FROM customers WHERE id = ?", customerId, function (err, result) {
+            if (err) throw err;
+            res.render('updateCustomers', { customer: result[0] });
+        });
+    } else {
+        res.send('Please login to view this page!');
+    }
 });
 
 app.post('/updateCustomers', authenticate, (req, res) => {
@@ -90,6 +98,7 @@ app.post('/updateCustomers', authenticate, (req, res) => {
     });
 });
 
+// List all the customers
 app.get('/listCustomers', authenticate, (req, res) => {
     conn.query("SELECT * FROM customers", (err, result) => {
         if (err) throw err;
@@ -97,6 +106,22 @@ app.get('/listCustomers', authenticate, (req, res) => {
         res.render('listCustomers', { title: 'List of GG customers', CustomersData: result });
     });
 });
+
+
+// Delete a customer
+app.get('/deleteCustomer', function (req, res, next) {
+    if (req.session.loggedin) {
+        let customerId = req.query.id;
+        conn.query("DELETE FROM customers WHERE id = ?", customerId, function (err, result) {
+            if (err) throw err;
+            res.redirect('/listCustomers');
+        });
+    } else {
+        res.send('Please login to view this page!');
+    }
+});
+
+//TODO manage products
 
 app.get('/products', (req, res) => {
     conn.query("SELECT * FROM products", (err, result) => {
