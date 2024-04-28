@@ -60,7 +60,35 @@ app.get('/adminsOnly', authenticate, (req, res) => {
     });
 });
 
-// Add Customers module
+// Customer register
+
+// Serve the registration form
+app.get('/customerRegister', (req, res) => {
+    res.render("customerRegister")});
+
+// Handle customer registration
+app.post('/customerRegister', (req, res) => {
+    let newCustomerId = 0;
+    conn.query("SELECT MAX(id) as maxId FROM customers", (err, result) => {
+        if (err) throw err;
+        newCustomerId = result[0].maxId + 1;
+        const sql = `INSERT INTO customers (id, name, password, phone, email, address, balance) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        conn.query(sql, [newCustomerId, req.body.name, req.body.password, req.body.phone, req.body.email, req.body.address, 0], (error, result) => {
+            if (error) throw error;
+            console.log('record inserted');
+            res.redirect("/customerProfile");
+        });
+    });
+});
+
+// Customer Profile Page
+app.get('/customerProfile', (req, res) => {
+    res.render("customerProfile")});
+
+
+
+
+// Add a customer
 app.get('/addCustomers', authenticate, (req, res) => {
     res.render('addCustomers');
 });
@@ -75,7 +103,7 @@ app.post('/addCustomers', authenticate, (req, res) => {
     });
 });
 
-// Update a customer module
+// Update a customer
 app.get('/updateCustomers', function (req, res, next) {
     if (req.session.loggedin) {
         let customerId = req.query.id;
