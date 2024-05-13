@@ -15,14 +15,19 @@ p {
         font-family: Arial, sans-serif;
         background-color: #f4f4f4;
     }
+
+    form,label {
+        max-width: 100%;
+    }
     
     .container {
+        max-width: 90%;
         margin: 0 auto;
         padding: 20px;
         background: #fff;
         border-radius: 5px;
         box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
-        margin-top: 50px;
+        margin-top: 50px; 
     }
     
     h2 {
@@ -74,4 +79,48 @@ p {
     .btn-danger:hover {
         background-color: #c82333;
     }
-    
+
+    .confirmation-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        text-align: center;
+    }
+    /* Center the buttons */
+    .confirmation-popup button {
+        margin: 10px; /* Add some spacing between buttons */
+    }
+
+    /* Center the buttons using flexbox */
+    .confirmation-popup button#confirmDelete,
+    .confirmation-popup button#cancelDelete {
+        display: inline-block; /* Ensure buttons are in the same line */
+    }
+
+    .confirmation-popup button#confirmDelete {
+        margin-right: auto; /* Push "Yes" button to the left */
+    }
+
+    .confirmation-popup button#cancelDelete {
+        margin-left: auto; /* Push "No" button to the right */
+    }
+
+    footer {
+        margin-top: 20px; /* Add some space between the container and the footer */
+        text-align: center;
+        background-color: #f0f0f0;
+        padding: 20px 0;
+    }
+
+    footer a {
+        text-decoration: none;
+        color: #333;
+        margin: 0 10px;
+    }

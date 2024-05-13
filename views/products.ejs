@@ -6,28 +6,95 @@
         <%- include('partials/navbar1.ejs') %>
         <div class="container">
             <h1>This is the products page.</h1>
+            <!-- Filter Products by Categories -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h5>Select Products by Categories:</h5>
+                </div>
+                <div class="col-md-12">
+                    <!-- "All" option -->
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input category-checkbox" type="checkbox" id="allCategories" value="all">
+                        <label class="form-check-label" for="allCategories">All</label>
+                    </div>
+                    <!-- Category options -->
+                    <% data.categories.forEach(function(category) { %>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input category-checkbox" type="checkbox" id="<%= category.name %>" value="<%= category.id %>">
+                            <label class="form-check-label" for="category<%= category.id %>"><%= category.name %></label>
+                        </div>
+                    <% }); %>
+                </div>
+                <div class="col-md-12 mt-3">
+                    <button class="btn btn-primary" id="filterButton">Filter</button>
+                </div>
+            </div>
 
-            <div class="row">
-                <% if (ProductsData.length !== 0) { 
-                    ProductsData.forEach(function(data) { 
-                        let imagePath = "public/images/" + data.name + ".jpg" %>
-                        <div class="col-md-4">
-                            <div class="card mb-4 shadow-sm">
-                                <img src=<%= imagePath %> alt= <%= data.name %> style="width: 100%; height: 250px; object-fit: cover;">
+
+            <div class="row" id="productList">
+                <% data.products.forEach(function(product) { 
+                    if (product.stock > 0) { %>
+                        <div class="col-md-4 product-item" data-categories="<%= product.category %>">
+                            <div class="card mb-4 shadow-sm" style="width: 22rem;">
+                                <img class="card-img-top" src="<%= product.imageUrl %>" alt="<%= product.name %>" style="width: 100%; height: 150px; object-fit: cover;">
                                 <div class="card-body">
                                     <p class="card-text">
-                                        <!-- <strong>ID:</strong> <%= data.id %><br> -->
-                                        <strong>Name:</strong> <%= data.name %><br>
-                                        <strong>Stock:</strong> <%= data.stock %><br>
-                                        <strong>Price:</strong> <%= data.price %><br>
-                                        <strong>Unit:</strong> <%= data.unit %><br>
+                                        <strong>Name:</strong> <%= product.name %><br>
+                                        <strong>Stock:</strong> <%= product.stock %><br>
+                                        <strong>Price:</strong> <%= product.price %><br>
+                                        <strong>Unit:</strong> <%= product.unit %><br>
+                                        <strong>Categories:</strong> <%= product.category %>
                                     </p>
                                 </div>
                             </div>
                         </div>
-                    <% }); 
-                } %>
+                    <% } }); %>
+                </div>
             </div>
         </div>
     </body>
 </html>
+
+<script>
+    document.getElementById('filterButton').addEventListener('click', function() {
+        // Retrieve selected categorys
+        var selectedCategories = [];
+        var categoryCheckboxes = document.getElementsByClassName('category-checkbox');
+        for (var i = 0; i < categoryCheckboxes.length; i++) {
+            if (categoryCheckboxes[i].checked) {
+                selectedCategories.push(categoryCheckboxes[i].id);
+            }
+        }
+
+        // Get all product items
+        var productItems = document.getElementsByClassName('product-item');
+
+        // Loop through each product item
+        for (var j = 0; j < productItems.length; j++) {
+            // Get the category IDs associated with the current product
+            var productCategory = productItems[j].dataset.categories;
+
+            // Check if the product belongs to at least one of the selected categories
+            var showProduct = selectedCategories.length === 0 || selectedCategories.includes(productCategory);
+
+            // Display or hide the product based on the filtering result
+            if (showProduct) {
+                productItems[j].style.display = 'block';
+            } else {
+                productItems[j].style.display = 'none';
+            }
+        }
+    });
+
+    document.getElementById('allCategories').addEventListener('change', function() {
+        var categoryCheckboxes = document.getElementsByClassName('category-checkbox');
+        for (var i = 0; i < categoryCheckboxes.length; i++) {
+            categoryCheckboxes[i].checked = this.checked;
+        }
+    });
+</script>
+
+
+
+
+

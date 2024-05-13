@@ -1,20 +1,24 @@
 <html>
     <head>
         <%- include('partials/header1.ejs') %> 
-    </head>
+    </head> 
     <body>
-        <%- include('partials/navbar2.ejs') %>
+        <%- include('partials/navbar3.ejs') %>
+        <div class="container" style="max-width: 700px;">
             <h1 style="color:red">Customer profile page.</h1>
             <p style="color:blue">
             Welcome to the customer profile page. Here is your profile:
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Balance</th>
-                    <th>Action</th>
-                </tr>
+                <ul>
+                    <li>Name: <%= customer.name %></li>
+                    <li>Phone: <%= customer.phone %></li>
+                    <li>Email: <%= customer.email %></li>
+                    <li>Address: <%= customer.address %></li>
+                    <li>Balance: <%= customer.balance %></li>
+                    <li>Your loyalty level: <%= customer.loyalty %></li>
+                    <li>Your premium discount level: <%= customer.discount %></li>
+                </ul>
+                You can update your profile or change your password <a href="/updateCustomerProfile">here</a>.
             </thead>
             
     </body>

@@ -1,25 +1,27 @@
-<!DOCTYPE html>
 <html>
 <head>
-    <title>Customer Registration</title>
+    <%- include('partials/header1.ejs') %>
+    <link rel="stylesheet" type="text/css" href="/public/css/styles.css">
 </head>
 <body>
-    <h2>Customer Registration</h2>
-    <form action="/customerRegister" method="POST">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <label for="repeat-password">Repeat Password:</label>
-        <input type="password" id="repeat-password" name="repeat-password" required><br><br>
-        <label for="phone">Phone:</label>
-        <input type="text" id="phone" name="phone"><br><br>
-        <label for="email">email:</label>
-        <input type="email" id="email" name="email"><br><br>
-        <label for="address">address:</label>
-        <input type="text" id="address" name="address"><br><br>
-        
-        <button type="submit">Register</button>
-    </form>
+    <div class="container">
+        <h1>Customer Registration</h1>
+        <form action="/customerRegister" method="POST">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+            <label for="repeat-password">Repeat Password:</label>
+            <input type="password" id="repeat-password" name="repeat-password" required><br><br>
+            <label for="phone">Phone:</label>
+            <input type="text" id="phone" name="phone"><br><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email"><br><br>
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address"><br><br>
+            
+            <button type="submit">Register</button>
+        </form>
+    </div>
 </body>
 </html>

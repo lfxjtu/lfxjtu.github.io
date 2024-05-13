@@ -3,13 +3,15 @@
         <%- include('partials/header1.ejs') %> 
     </head>
     <body>
-        <%- include('partials/navbar2.ejs') %>
+        <div class="container">
+            <%- include('partials/navbar2.ejs') %>
             <h1 style="color:red">Administrators only page.</h1>
             <p style="color:blue">
             Welcome 
             <strong><%= username %> </strong> to a admins only page. You are now logged in.
+            As a <strong><%= role %> </strong>, you can 
             </p>
-            As an administrator, you can
-            <a href="/addcustomers">add a customer</a>, or <a href="/listCustomers">manage the existing customers, update or delete a customer</a>
-    </body>
+            <a href="/addcustomers">add a customer</a>, or <a href="/manageCustomers">manage the existing customers, update or delete a customer</a>
+        </div>
+        </body>
 </html>

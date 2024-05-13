@@ -4,12 +4,9 @@
     </head>
     <body>
         <%- include('partials/navbar2.ejs') %>
-        <div class="container">
+        <div class="container" style="max-width: 700px;">
             <h1>Update an existing customer.</h1>
-            <form method="POST">
-                <label style="width: 100px;" for="id"> ID</label>
-                <input type="text" id="id" placeholder="Enter Customer's ID" name="id" value="<%= customer.id %>" required>
-                <br>
+            <form method="POST" >
                 <br>
                 <label style="width: 100px;" for="name"> Name</label>
                 <input type="text" id="name" placeholder="Enter Customer's name" name="name" value="<%= customer.name %>" required>
@@ -26,8 +23,12 @@
                 <label style="width: 100px;" for="balance"> balance</label>
                 <input type="text" id="balance" placeholder="Enter blance" name="balance" value="<%= customer.balance %>" required>
                 <br>
+                <br>                
+                <label style="width: 100px;" for="loyaltyId"> loyalty id</label>
+                <input type="text" id="loyaltyId" placeholder="Enter loyaltyId" name="loyaltyId" value="<%= customer.loyaltyId %>" required>
                 <br>
-                <button type="submit">Submit</button>
+                <br>
+                <button type="submit">Update</button>
                 <br>
             </form>
         </div>
