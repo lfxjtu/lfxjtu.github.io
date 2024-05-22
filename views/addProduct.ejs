@@ -71,16 +71,25 @@
     <body>
         <%- include('partials/navbar2.ejs') %>
         <div class="container" style="max-width: 500px;">
-            <h1>Add a new customer</h1>
+            <h1>Add a new product</h1>
             <form method="POST">
-                <label for="name"> Name</label>
-                <input type="text" id="name" placeholder="Enter Customer's name" name="name">
-                <label for="password"> Password</label>
-                <input type="password" id="password" placeholder="Enter password" name="password">
-                <label for="phone"> phone</label>
-                <input type="text" id="phone" placeholder="Enter phone number" name="phone">
-                <label for="balance"> balance</label>
-                <input type="text" id="balance" placeholder="Enter blance" name="balance">
+                <label for="name">Product Name</label>
+                <input type="text" id="name" placeholder="Enter product name" name="name">
+                <label for="stock">Product stock level</label>
+                <input type="stock" id="stock" placeholder="Enter product stock" name="stock">
+                <label for="price">Price</label>
+                <input type="text" id="price" placeholder="Enter product price" name="price">
+                <label for="unit">Unit</label>
+                <input type="text" id="unit" placeholder="Enter product price unit" name="unit">
+                <label for="categoryId">Select category</label>
+                <select id="categoryId" name="categoryId">
+                    <% if (categories.length != 0) { %>
+                        <% categories.forEach((category) => { %>
+                            <option value="<%= category.id %>"><%= category.name %></option>
+                    <% })}; %>
+                </select>                
+                <label for="imageUrl">Select an image from your local machine</label>
+                <input type="text" id="imageUrl" name="imageUrl">
                 <input type="submit"></input>
             </form>
         </div>

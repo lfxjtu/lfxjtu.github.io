@@ -11,6 +11,11 @@ p {
      
     }
 
+img.thumbnail {
+        width: 50px; /* Adjust the size of the thumbnail as needed */
+        height: auto;
+    }
+
     body {
         font-family: Arial, sans-serif;
         background-color: #f4f4f4;

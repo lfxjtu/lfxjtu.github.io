@@ -35,55 +35,92 @@ app.get('/login', (req, res) => {
     res.render('login.ejs');
 });
 
-// Customer module
+
 app.post('/customerAuth', (req, res) => {
     const name = req.body.username;
     const password = req.body.password;
     
     if (name && password) {
-        conn.query('SELECT * FROM customers WHERE name = ? AND password = ?', [name, password], (error, results, fields) => {
-            if (error) throw error;
-            if (results.length > 0) {
-                req.session.loggedin = true;
-                req.session.username = name;
-                req.session.customer = results[0];
-                console.log(req.session.customer);
-                res.redirect('customerProfile');
-            } else {
-                console.log("User " + name + " attempted to log in but failed")
-                res.send('Incorrect Username and/or Password!');
+        bcrypt.hash(password, 10, (err, hash) => {
+            if (err) {
+                console.error("Error hashing password:", err);
+                res.status(500).send('Internal Server Error');
+                return;
             }
+            conn.query('SELECT * FROM customers WHERE name = ?', [name], (error, results, fields) => {
+                if (error) {
+                    console.error("Database error:", error);
+                    res.status(500).send('Internal Server Error');
+                    return;
+                }
+                if (results.length > 0) {
+                    bcrypt.compare(password, results[0].password, (err, result) => {
+                        if (err) {
+                            console.error("Error comparing passwords:", err);
+                            res.status(500).send('Internal Server Error');
+                            return;
+                        }
+                        if (result) {
+                            req.session.loggedin = true;
+                            req.session.username = name;
+                            req.session.customer = results[0];
+                            console.log("User", name, "logged in successfully");
+                            res.redirect('customerProfile');
+                        } else {
+                            console.log("User", name, "attempted to log in but failed");
+                            res.status(401).send('Incorrect Username and/or Password!');
+                        }
+                    });
+                } else {
+                    console.log("User", name, "not found");
+                    res.status(401).send('Incorrect Username and/or Password!');
+                }
+            });
         });
     } else {
-        res.send('Please enter Username and Password!');
+        res.status(400).send('Please enter Username and Password!');
     }
 });
 
-app.get('/updateCustomerProfile', authenticate, (req, res) => {
-    res.render('updateCustomerProfile.ejs', {customer: req.session.customer});
+
+app.get('/customerUpdateProfile', authenticate, (req, res) => {
+    res.render('customerUpdateProfile.ejs', {customer: req.session.customer});
 })
 
-app.post('/updateCustomerProfile', authenticate, (req, res) => {
+app.post('/customerUpdateProfile', authenticate, (req, res) => {
     let customer = req.session.customer;
+    let password = req.body.password;
     const sql = `UPDATE customers SET name = ?, password = ?, phone = ?, email = ?, address =? WHERE id = ?`;
-    conn.query(sql, [req.body.name, req.body.password, req.body.phone, req.body.email, req.body.address, customer.id], (err, result) => {
-        if (err) throw err;
-        console.log('customer record self updated');
-        // Update session data with the new customer information
-        req.session.customer = {
-            id: customer.id,
-            name: req.body.name,
-            password: req.body.password,
-            phone: req.body.phone,
-            email: req.body.email,
-            address: req.body.address,
-            balance: customer.balance,
-            loyalty: customer.loyalty,
-            discount: customer.discount
-        };
+    bcrypt.hash(password, 10, (err, hash) => {
+        if (err) {
+            console.error("Error hashing password:", err);
+            res.status(500).send('Internal Server Error');
+            return;    
+        }
+        conn.query(sql, [req.body.name, hash, req.body.phone, req.body.email, req.body.address, customer.id], (err, result) => {
+            if (err) {
+                console.error("Database error:", err);
+                res.status(500).send('Internal Server Error');
+                return; 
+            }
+            console.log('customer record self updated');
+            // Update session data with the new customer information
+            req.session.customer = {
+                id: customer.id,
+                name: req.body.name,
+                password: hash,
+                phone: req.body.phone,
+                email: req.body.email,
+                address: req.body.address,
+                balance: customer.balance,
+                loyalty: customer.loyalty,
+                discount: customer.discount
+            };
         console.log('new customer info: ', req.session.customer);
         res.render('customerProfile.ejs', { customer: req.session.customer });
     });
+    })
+    
 });
 
 // Customer register
@@ -94,17 +131,22 @@ app.get('/customerRegister', (req, res) => {
 
 // Handle customer registration
 app.post('/customerRegister', (req, res) => {
-    let newCustomerId = 0;
     conn.query("SELECT MAX(id) as maxId FROM customers", (err, result) => {
         if (err) throw err;
-        newCustomerId = result[0].maxId + 1;
-        const sql = `INSERT INTO customers (id, name, password, phone, email, address, balance) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-        conn.query(sql, [newCustomerId, req.body.name, req.body.password, req.body.phone, req.body.email, req.body.address, 0], (error, result) => {
-            if (error) throw error;
-            console.log('record inserted: ');
-            req.session.customer = req.body;
-            res.redirect("/login");
-        });
+        const newCustomerId = result[0].maxId + 1;
+
+        //Hash password while registering
+        bcrypt.hash(req.body.password, 10, (err, hash) =>{
+            if(err) throw err;
+
+            const sql = `INSERT INTO customers (id, name, password, phone, email, address, balance) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            conn.query(sql, [newCustomerId, req.body.name, hash, req.body.phone, req.body.email, req.body.address, 0], (error, result) => {
+                if (error) throw error;
+                console.log('record inserted: ');
+                req.session.customer = req.body;
+                res.redirect("/login");
+            });
+        })
     });
 });
 
@@ -130,6 +172,7 @@ app.get('/customerProfile', authenticate, (req, res) => {
 });
 
 // admin module
+// admin login
 
 app.get('/adminLogin', (req, res) => {
     res.render('adminLogin.ejs');
@@ -140,7 +183,7 @@ app.post('/adminAuth', (req, res) => {
     const password = req.body.password;
     
     if (name && password) {
-        conn.query('SELECT * FROM admin WHERE name = ? AND password = ?', [name, password], (error, results, fields) => {
+        conn.query('SELECT * FROM admin WHERE name = ? AND password = PASSWORD(?)', [name, password], (error, results, fields) => {
             if (error) throw error;
             if (results.length > 0) {
                 req.session.loggedin = true;
@@ -204,10 +247,10 @@ app.post('/updateCustomers', authenticate, (req, res) => {
     let id = req.query.id;
     console.log('id to be updated: ', req.query.id);
     console.log('req.body: ', req.body)
-    const { name, password, phone, balance, loyaltyId } = req.body;
+    const { name, phone, balance, loyaltyId } = req.body;
     console.log('loyaltyId: ', loyaltyId);
-    const sql = `UPDATE customers SET name = ?, password = ?, phone = ?, balance = ?, loyaltyId = ? WHERE id = ?`;
-    conn.query(sql, [name, password, phone, balance, loyaltyId, id], (err, result) => {
+    const sql = `UPDATE customers SET name = ?, phone = ?, balance = ?, loyaltyId = ? WHERE id = ?`;
+    conn.query(sql, [name, phone, balance, loyaltyId, id], (err, result) => {
         if (err) throw err;
         console.log('record updated');
         res.redirect('manageCustomers');
@@ -238,6 +281,27 @@ app.get('/deleteCustomer', function (req, res, next) {
 
 //TODO manage products
 
+// Add a product
+app.get('/addProduct', authenticate, (req, res) => {
+    let categories;
+    conn.query(`SELECT * FROM categories`, function (err, result){
+        if (err) throw err;
+        console.log("categories: ", result);
+        res.render('addProduct', { title: 'Add a product', categories: result});
+
+    })
+});
+
+app.post('/addProduct', authenticate, (req, res) => {
+    const { name, stock, price, unit, categoryId, imageUrl } = req.body;
+    const sql = `INSERT INTO products (name, stock, price, unit, categoryId, imageUrl) VALUES (?, ?, ?, ?, ?, ?)`;
+    conn.query(sql, [name, stock, price, unit, categoryId, imageUrl], (err, result) => {
+        if (err) throw err;
+        console.log('record inserted');
+        res.redirect('adminsOnly');
+    });
+});
+
 app.get('/products', (req, res) => {
     // Query to select all categories
     const categoriesQuery = "SELECT * FROM categories";
@@ -263,6 +327,26 @@ app.get('/products', (req, res) => {
     });
 });
 
+app.get('/manageProducts', authenticate, (req, res) => {
+    conn.query("SELECT * FROM products", (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.render('manageProducts', { title: 'List of GG Products', ProductsData: result });
+    });
+});
+
+// Delete a product
+app.get('/deleteProduct', function (req, res, next) {
+    if (req.session.loggedin) {
+        let productId = req.query.id;
+        conn.query("DELETE FROM products WHERE id = ?", productId, function (err, result) {
+            if (err) throw err;
+            res.redirect('/manageProducts');
+        });
+    } else {
+        res.send('Please login to view this page!');
+    }
+});
 
 app.get('/logout', (req, res) => {
     req.session.destroy();

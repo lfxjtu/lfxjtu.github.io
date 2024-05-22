@@ -1,0 +1,98 @@
+<html>
+<head>
+    <%- include('partials/header1.ejs') %>
+    <link rel="stylesheet" type="text/css" href="/public/css/styles.css">
+</head>
+<body>
+    <%- include('partials/navbar2.ejs') %>
+    <div class="container">
+        <h2>List of Products</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Stock</th>
+                    <th>Price</th>
+                    <th>Unit</th>
+                    <th>Category ID</th>
+                    <th>Image</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (ProductsData.length != 0) {
+                    ProductsData.forEach((data) => { %>
+                        <tr>
+                            <td><%= data.id %></td>
+                            <td><%= data.name %></td>
+                            <td><%= data.stock %></td>
+                            <td>$<%= data.price %></td>
+                            <td><%= data.unit %></td>
+                            <td><%= data.categoryId %></td>
+                            <td><img src="<%= data.imageUrl %>" alt="<%= data.name %>" class="thumbnail"></td>
+                            <td>
+                                <a href="/updateProducts?id=<%= data.id %>" class="btn">Update</a>
+                                <!-- Add delete button with confirmation popup -->
+                                <button class="btn btn-danger delete-btn" data-product-id="<%= data.id %>">Delete</button>
+                            </td>
+                                                    
+                    <% });
+                } else { %>
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No products found</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Confirmation Popup -->
+    <div class="confirmation-popup" id="confirmationPopup">
+        <div class="popup-message" id="popupMessage">Are you sure you want to delete this product?</div>
+        <button id="confirmDelete">Yes</button>
+        <button id="cancelDelete">No</button>
+    </div>
+
+    <!-- Add JavaScript for the confirmation popup -->
+    <script>
+        // Get delete buttons and confirmation popup
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const confirmationPopup = document.getElementById('confirmationPopup');
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        const cancelDeleteBtn = document.getElementById('cancelDelete');
+        const popupMessage = document.getElementById('popupMessage');
+    
+        // Attach event listener to each delete button
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                // Prevent the default action of the anchor tag
+                event.preventDefault();
+                // Get the customer ID from the data attribute
+                const productId = button.getAttribute('data-product-id');
+                // Update the popup message with the product ID
+                popupMessage.textContent = `Are you sure you want to delete this product ${productId}?`;
+                // Show the confirmation popup
+                confirmationPopup.style.display = 'block';
+    
+                // Attach click event to confirm delete button
+                confirmDeleteBtn.addEventListener('click', () => {
+                    // Proceed with deletion logic here
+                    console.log(`Deleting product with ID ${productId}`);
+                    // Hide confirmation popup
+                    confirmationPopup.style.display = 'none';
+                    // Redirect to deleteCustomer route with product ID
+                    window.location.href = `/deleteProduct?id=${productId}`;
+                });
+    
+                // Handle cancel delete
+                cancelDeleteBtn.addEventListener('click', () => {
+                    // Hide confirmation popup
+                    confirmationPopup.style.display = 'none';
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>

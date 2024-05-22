@@ -8,10 +8,13 @@
             <h1 style="color:red">Administrators only page.</h1>
             <p style="color:blue">
             Welcome 
-            <strong><%= username %> </strong> to a admins only page. You are now logged in.
+            <strong><%= username.toUpperCase() %> </strong> to the admins only page. You are now logged in.
             As a <strong><%= role %> </strong>, you can 
             </p>
             <a href="/addcustomers">add a customer</a>, or <a href="/manageCustomers">manage the existing customers, update or delete a customer</a>
+            <p>
+                Product administrator can <a href="/addproduct">add a product</a>, or <a href="/manageProducts">manage all products</a>.
+            </p>
         </div>
         </body>
 </html>
