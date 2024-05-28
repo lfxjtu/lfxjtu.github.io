@@ -69,25 +69,29 @@
         </style>
     </head>
     <body>
-        <%- include('partials/navbar2.ejs') %>
+        <%- include('partials/navbar4.ejs') %>
         <div class="container" style="max-width: 700px;">
-            <h1>Update an existing customer.</h1>
+            <h1>Update an existing product</h1>
             <form method="POST" >
                 <br>
-                <% let {customer, loyalties} = customerData %>
-                <label style="width: 100px;" for="name"> Name</label>
-                <input type="text" id="name" placeholder="Enter Customer's name" name="name" value="<%= customer.name %>" required>
-                <label style="width: 100px;" for="phone"> phone</label>
-                <input type="text" id="phone" placeholder="Enter phone number" name="phone" value="<%= customer.phone %>" required>
-                <label style="width: 100px;" for="balance"> balance</label>
-                <input type="text" id="balance" placeholder="Enter blance" name="balance" value="<%= customer.balance %>" required>              
-                <label style="width: 100px;" for="loyaltyId"> loyalty</label>
-                <select id="loyaltyId" name="loyaltyId">
-                    <% if (loyalties != 0) { %>
-                        <% loyalties.forEach((loyalty) => { %>
-                            <option value="<%= loyalty.loyaltyId %>" <%= customer.loyaltyId === loyalty.loyaltyId ? 'selected' : '' %>><%= loyalty.level %></option>
-                        <% })} %>
-                </select>
+                <label for="name">Product Name</label>
+                <input type="text" id="name" placeholder="Enter product name" name="name" value="<%= productsData.product.name %>">
+                <label for="stock">Product stock level</label>
+                <input type="stock" id="stock" placeholder="Enter product stock" name="stock" value="<%= productsData.product.stock %>">
+                <label for="price">Price</label>
+                <input type="text" id="price" placeholder="Enter product price" name="price" value="<%= productsData.product.price %>">
+                <label for="unit">Unit</label>
+                <input type="text" id="unit" placeholder="Enter product price unit" name="unit" value="<%= productsData.product.unit %>">
+                <label for="categoryId">Select category</label>
+                <select id="categoryId" name="categoryId">
+                    <% if (productsData.categories.length != 0) { %>
+                        <% let categories = productsData.categories; %>
+                        <% categories.forEach((category) => { %>
+                            <option value="<%= category.id %>" <%= category.id === productsData.product.categoryId ? 'selected' : '' %>><%= category.name %></option>
+                            <% })}; %>
+                </select>                
+                <label for="imageUrl">Select an image from your local machine</label>
+                <input type="text" id="imageUrl" name="imageUrl" value="<%= productsData.product.imageUrl %>">
                 <input type="submit"></input>
             </form>
         </div>

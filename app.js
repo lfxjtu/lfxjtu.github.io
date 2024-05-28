@@ -229,32 +229,31 @@ app.post('/addCustomers', authenticate, (req, res) => {
 });
 
 // Update a customer
-app.get('/updateCustomers', function (req, res, next) {
-    if (req.session.loggedin) {
+app.get('/updateCustomers', authenticate, function (req, res, next) {
+    conn.query(`SELECT * FROM loyalty`, (err, result) =>{
+        if (err) throw err;
+        let loyalties = result;
         let customerId = req.query.id;
         console.log('id to be updated: ', customerId);
         conn.query("SELECT * FROM customers WHERE id = ?", customerId, function (err, result) {
             if (err) throw err;
-            console.log('result0: ', result[0]);
-            res.render('updateCustomers', { customer: result[0] });
+            let customer = result[0];
+            res.render('updateCustomers', { customerData: {customer, loyalties}});
         });
-    } else {
-        res.send('Please login to view this page!');
-    }
+    })
 });
 
 app.post('/updateCustomers', authenticate, (req, res) => {
     let id = req.query.id;
     console.log('id to be updated: ', req.query.id);
-    console.log('req.body: ', req.body)
     const { name, phone, balance, loyaltyId } = req.body;
-    console.log('loyaltyId: ', loyaltyId);
     const sql = `UPDATE customers SET name = ?, phone = ?, balance = ?, loyaltyId = ? WHERE id = ?`;
     conn.query(sql, [name, phone, balance, loyaltyId, id], (err, result) => {
         if (err) throw err;
         console.log('record updated');
         res.redirect('manageCustomers');
     });
+    
 });
 
 // List all the customers
@@ -283,10 +282,8 @@ app.get('/deleteCustomer', function (req, res, next) {
 
 // Add a product
 app.get('/addProduct', authenticate, (req, res) => {
-    let categories;
     conn.query(`SELECT * FROM categories`, function (err, result){
         if (err) throw err;
-        console.log("categories: ", result);
         res.render('addProduct', { title: 'Add a product', categories: result});
 
     })
@@ -348,6 +345,35 @@ app.get('/deleteProduct', function (req, res, next) {
     }
 });
 
+// Update a product
+app.get('/updateProducts', authenticate, function (req, res, next) {
+    
+    conn.query(`SELECT * FROM categories`, function (err, result){
+        if (err) throw err;
+        // res.render('addProduct', { title: 'Add a product', categories: result});
+        let categories = result;
+        let productId = req.query.id;
+        console.log('id to be updated: ', productId);
+        conn.query("SELECT * FROM products WHERE id = ?", productId, function (err, result) {
+            if (err) throw err;
+            let product = result[0];
+            res.render('updateProducts', { productsData: {categories, product} });
+        });
+    }) 
+});
+
+app.post('/updateProducts', authenticate, (req, res) => {
+    let id = req.query.id;
+    const { name, stock, price, unit, categoryId, imageUrl } = req.body;
+    const sql = `UPDATE products SET name = ?, stock = ?, price = ?, unit = ?, categoryId = ?, imageUrl = ? WHERE id = ?`;
+    conn.query(sql, [name, stock, price, unit, categoryId, imageUrl, id], (err, result) => {
+        if (err) throw err;
+        console.log('record inserted');
+        res.redirect('manageProducts');
+    });
+});
+
+// Log out
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
