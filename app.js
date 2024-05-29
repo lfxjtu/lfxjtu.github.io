@@ -1,8 +1,9 @@
 const express = require('express');
 const session = require('express-session');
 const conn = require('./dbConfig');
-
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 
@@ -26,6 +27,38 @@ const authenticate = (req, res, next) => {
     }
 };
 
+// Set storage engine for multer
+const storage = multer.diskStorage({
+    destination: './public/images/',
+    filename: function(req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+})
+
+// Init multer upload
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 1000000 }, // 1MB limit
+    fileFilter: function(req, file, cb) {
+        checkFileType(file, cb);
+    }
+}).single('imageFile');
+
+// Check file type
+
+function checkFileType(file, cb) {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb('Error: Images Only!');
+    }
+}
+
+
 // Routes
 app.get('/', (req, res) => {
     res.render("home");
@@ -33,6 +66,32 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req, res) => {
     res.render('login.ejs');
+});
+
+// Show all the products
+app.get('/products', (req, res) => {
+    // Query to select all categories
+    const categoriesQuery = "SELECT * FROM categories";
+
+    conn.query(categoriesQuery, (err, categoriesResult) => {
+        if (err) throw err;
+
+        // Query to select all products
+        const productsQuery = 
+            "SELECT products.*, categories.name AS category FROM products RIGHT JOIN categories on products.categoryId = categories.id";
+
+        conn.query(productsQuery, (err, productsResult) => {
+            if (err) throw err;
+
+            // Combine products and categories into a single object
+            const data = {
+                categories: categoriesResult,
+                products: productsResult
+            };
+
+            res.render('products', { title: 'List of GG products', data: data });
+        });
+    });
 });
 
 
@@ -290,38 +349,25 @@ app.get('/addProduct', authenticate, (req, res) => {
 });
 
 app.post('/addProduct', authenticate, (req, res) => {
-    const { name, stock, price, unit, categoryId, imageUrl } = req.body;
-    const sql = `INSERT INTO products (name, stock, price, unit, categoryId, imageUrl) VALUES (?, ?, ?, ?, ?, ?)`;
-    conn.query(sql, [name, stock, price, unit, categoryId, imageUrl], (err, result) => {
-        if (err) throw err;
-        console.log('record inserted');
-        res.redirect('adminsOnly');
-    });
-});
-
-app.get('/products', (req, res) => {
-    // Query to select all categories
-    const categoriesQuery = "SELECT * FROM categories";
-
-    conn.query(categoriesQuery, (err, categoriesResult) => {
-        if (err) throw err;
-
-        // Query to select all products
-        const productsQuery = 
-            "SELECT products.*, categories.name AS category FROM products RIGHT JOIN categories on products.categoryId = categories.id";
-
-        conn.query(productsQuery, (err, productsResult) => {
-            if (err) throw err;
-
-            // Combine products and categories into a single object
-            const data = {
-                categories: categoriesResult,
-                products: productsResult
-            };
-
-            res.render('products', { title: 'List of GG products', data: data });
-        });
-    });
+    upload(req, res, (err) => {
+        if (err) {
+            res.status(400).send('Error uploading file: ' + err);
+        } else {            
+            const { name, stock, price, unit, categoryId } = req.body;
+            const imageUrl = req.file ? 'public/images/' + req.file.filename : ''; // If no file uploaded then emtpy 
+            const sql = `INSERT INTO products (name, stock, price, unit, categoryId, imageUrl) VALUES (?, ?, ?, ?, ?, ?)`;
+            conn.query(sql, [name, stock, price, unit, categoryId, imageUrl], (err, result) => {
+                if (err) {
+                    console.error('Error inserting product: ', err);
+                    res.status(500).send('Internal Server Error');
+                } else {
+                    console.log(result);
+                    console.log('New product is added')
+                    res.redirect('/manageProducts');    
+                }
+            });
+        }
+    })
 });
 
 app.get('/manageProducts', authenticate, (req, res) => {
@@ -347,13 +393,10 @@ app.get('/deleteProduct', function (req, res, next) {
 
 // Update a product
 app.get('/updateProducts', authenticate, function (req, res, next) {
-    
     conn.query(`SELECT * FROM categories`, function (err, result){
         if (err) throw err;
-        // res.render('addProduct', { title: 'Add a product', categories: result});
         let categories = result;
         let productId = req.query.id;
-        console.log('id to be updated: ', productId);
         conn.query("SELECT * FROM products WHERE id = ?", productId, function (err, result) {
             if (err) throw err;
             let product = result[0];
@@ -364,13 +407,26 @@ app.get('/updateProducts', authenticate, function (req, res, next) {
 
 app.post('/updateProducts', authenticate, (req, res) => {
     let id = req.query.id;
-    const { name, stock, price, unit, categoryId, imageUrl } = req.body;
-    const sql = `UPDATE products SET name = ?, stock = ?, price = ?, unit = ?, categoryId = ?, imageUrl = ? WHERE id = ?`;
-    conn.query(sql, [name, stock, price, unit, categoryId, imageUrl, id], (err, result) => {
-        if (err) throw err;
-        console.log('record inserted');
-        res.redirect('manageProducts');
-    });
+    upload(req, res, (err) => {
+        if (err) {
+            console.error('Error uploading file:', err);
+            res.status(400).send('Error uploading file: ', err);
+        } else {
+            const { name, stock, price, unit, categoryId } = req.body;
+            const imageUrl = req.file ? 'public/images/' + req.file.filename : ''; // If no file uploaded then emtpy 
+            const sql = `UPDATE products SET name = ?, stock = ?, price = ?, unit = ?, categoryId = ?, imageUrl = ? WHERE id = ?`;
+            conn.query(sql, [name, stock, price, unit, categoryId, imageUrl, id], (err, result) => {
+                if (err) {
+                    console.error('Error uploading product:', err);
+                    res.send(500).send('Internal Server Error');
+                } else {
+                    console.log('Product updated successfully');
+                    res.redirect('manageProducts');
+                }
+            });
+        }
+    })
+    
 });
 
 // Log out
