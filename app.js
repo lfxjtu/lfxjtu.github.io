@@ -54,7 +54,7 @@ function checkFileType(file, cb) {
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb('Error: Images Only!');
+        cb(new Error('Error: Images Only!'));
     }
 }
 
@@ -86,9 +86,25 @@ app.get('/products', (req, res) => {
             // Combine products and categories into a single object
             const data = {
                 categories: categoriesResult,
-                products: productsResult
+                products: productsResult,
+                customerDiscount: 1
             };
 
+            if (req.session.loggedin) {
+                loyaltyId = req.session.customer.loyaltyId;
+                conn.query('SELECT discount FROM loyalty WHERE loyaltyId = ?', [loyaltyId], (error, result) => {
+                    if (error) {
+                        console.error("Database error:", error);
+                        res.status(500).send('Internal Server Error');
+                        return;
+                    }
+                    if (result.length > 0) {
+                        data.customerDiscount = result.discount;
+                        console.log("customer discount: ", data.customerDiscount)
+                    }
+                })
+            };
+            console.log("data: ", data)
             res.render('products', { title: 'List of GG products', data: data });
         });
     });
@@ -343,7 +359,7 @@ app.get('/deleteCustomer', function (req, res, next) {
 app.get('/addProduct', authenticate, (req, res) => {
     conn.query(`SELECT * FROM categories`, function (err, result){
         if (err) throw err;
-        res.render('addProduct', { title: 'Add a product', categories: result});
+        res.render('addProduct', { title: 'Add a product', categories: result, errorMessage: null});
 
     })
 });
@@ -351,7 +367,17 @@ app.get('/addProduct', authenticate, (req, res) => {
 app.post('/addProduct', authenticate, (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.status(400).send('Error uploading file: ' + err);
+            conn.query(`SELECT * FROM categories`, function (err, result){
+                if (err) {
+                    console.error("Database error: ", err);
+                    return res.status(500).send('Internal Server Error');
+                };
+                res.render('addProduct', { 
+                    title: 'Add a product', 
+                    categories: result,
+                    errorMessage: err ? err.message : 'Unknown error occurred'
+                });
+            });
         } else {            
             const { name, stock, price, unit, categoryId } = req.body;
             const imageUrl = req.file ? 'public/images/' + req.file.filename : ''; // If no file uploaded then emtpy 
