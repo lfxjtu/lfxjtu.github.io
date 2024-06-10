@@ -3,55 +3,67 @@
         <%- include('partials/header1.ejs') %> 
     </head>
     <body>
-        <%- include('partials/navbar1.ejs') %>
-        <div class="container">
-            <h1>This is the products page.</h1>
-            <!-- Filter Products by Categories -->
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <h5>Select Products by Categories:</h5>
-                </div>
-                <div class="col-md-12">
-                    <!-- "All" option -->
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input category-checkbox" type="checkbox" id="allCategories" value="all">
-                        <label class="form-check-label" for="allCategories">All</label>
+        <% if (data.customerDiscount == 1) { %>
+                <%- include('partials/navbar1.ejs') %>
+            <% } else { %>
+                <%- include('partials/navbar3.ejs') %>
+            <% } %>    
+            <div class="container">
+                <h1>This is the products page.</h1>
+                <!-- Filter Products by Categories -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h5>Select Products by Categories:</h5>
                     </div>
-                    <!-- Category options -->
-                    <% data.categories.forEach(function(category) { %>
+                    <div class="col-md-12">
+                        <!-- "All" option -->
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input category-checkbox" type="checkbox" id="<%= category.name %>" value="<%= category.id %>">
-                            <label class="form-check-label" for="category<%= category.id %>"><%= category.name %></label>
+                            <input class="form-check-input category-checkbox" type="checkbox" id="allCategories" value="all">
+                            <label class="form-check-label" for="allCategories">All</label>
                         </div>
-                    <% }); %>
+                        <!-- Category options -->
+                        <% data.categories.forEach(function(category) { %>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input category-checkbox" type="checkbox" id="<%= category.name %>" value="<%= category.id %>">
+                                <label class="form-check-label" for="category<%= category.id %>"><%= category.name %></label>
+                            </div>
+                        <% }); %>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <button class="btn btn-primary" id="filterButton">Filter</button>
+                    </div>
                 </div>
-                <div class="col-md-12 mt-3">
-                    <button class="btn btn-primary" id="filterButton">Filter</button>
-                </div>
-            </div>
-
-
-            <div class="row" id="productList">
-                <% data.products.forEach(function(product) { 
-                    if (product.stock > 0) { %>
-                        <div class="col-md-4 product-item" data-categories="<%= product.category %>">
-                            <div class="card mb-4 shadow-sm" style="width: 22rem;">
-                                <img class="card-img-top" src="<%= product.imageUrl %>" alt="<%= product.name %>" style="width: 100%; max-height: 250px; object-fit: cover;">
-                                <div class="card-body">
-                                    <p class="card-text">
-                                        <strong>Name:</strong> <%= product.name %><br>
-                                        <strong>Stock:</strong> <%= product.stock %><br>
-                                        <strong>Price:</strong> <%= product.price %><br>
-                                        <strong>Unit:</strong> <%= product.unit %><br>
-                                        <strong>Categories:</strong> <%= product.category %>
-                                    </p>
+                <div class="row" id="productList">
+                    <% data.products.forEach(function(product) { 
+                        if (product.stock > 0) { 
+                            discountPrice = (product.price * data.customerDiscount).toFixed(2);
+                            %>
+                            <div class="col-md-4 product-item" data-categories="<%= product.category %>">
+                                <div class="card mb-4 shadow-sm" style="width: 22rem;">
+                                    <img class="card-img-top" src="<%= product.imageUrl %>" alt="<%= product.name %>" style="width: 100%; max-height: 250px; object-fit: cover;">
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <strong>Name:</strong> <%= product.name %><br>
+                                            <strong>Stock:</strong> <%= product.stock %><br>
+                                            <strong>Price:</strong> 
+                                                <% if (data.customerDiscount !=1) { %>
+                                                    <del><%= product.price %></del>
+                                                    <strong style="color: red"> <%=discountPrice %></strong>
+                                                    <img src="/public/images/special.jpg" style="height: 40px; width: auto;"></img>
+                                                    <% } else { %>
+                                                        <%= product.price %>
+                                                        <% } %>
+                                                </label>
+                                            <br>
+                                            <strong>Unit:</strong> <%= product.unit %><br>
+                                            <strong>Categories:</strong> <%= product.category %>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    <% } }); %>
+                        <% } }); %>
                 </div>
             </div>
-        </div>
     </body>
 </html>
 
@@ -93,8 +105,3 @@
         }
     });
 </script>
-
-
-
-
-

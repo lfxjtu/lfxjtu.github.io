@@ -99,13 +99,17 @@ app.get('/products', (req, res) => {
                         return;
                     }
                     if (result.length > 0) {
-                        data.customerDiscount = result.discount;
+                        console.log("Discount Query Result: ", result)
+                        data.customerDiscount = result[0].discount;
                         console.log("customer discount: ", data.customerDiscount)
                     }
+                    console.log("data: ", data)
+                    res.render('products', { title: 'List of GG products', data: data });
                 })
-            };
-            console.log("data: ", data)
-            res.render('products', { title: 'List of GG products', data: data });
+            } else {
+                console.log("data: ", data)
+                res.render('products', { title: 'List of GG products', data: data });
+            }
         });
     });
 });
