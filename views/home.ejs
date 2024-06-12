@@ -1,9 +1,36 @@
+<!DOCTYPE html>
 <html>
-    <head>
-       <%- include('partials/header1.ejs') %> 
-    </head>
-    <body>
-        <%- include('partials/navbar1.ejs') %>
-        <h1>This is home page.</h1>
-    </body>
-</html> 
+<head>
+    <%- include('partials/header1.ejs') %>
+    <!-- Add custom CSS for additional styling -->
+    <link rel="stylesheet" href="/public/css/styles.css">
+</head>
+<body>
+    <%- include('partials/navbar1.ejs') %>
+    <div class="container">
+        <div class="jumbotron mt-3">
+            <h1 class="display-4">Welcome to GardenGrocer</h1>
+            <p class="lead">In an era where the cost of living poses increasing challenges for New Zealanders, accessing affordable food options remains a pressing concern. Amidst this backdrop, GardenGrocer, a local grocery supplier based in Porirua Wellington, stands out for its commitment to supplying residents with fresh produce at competitive prices.</p>
+            <hr class="my-4">
+            <p>Without the need for login, users will enjoy unrestricted browsing of GardenGrocer's extensive product catalog, complete with real-time stock updates, list prices, and ongoing promotions. However, upon logging in with unique credentials, customers will unlock access to personalized discounts, enhancing their shopping experience and maximizing affordability.</p>
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="/login" role="button">Login</a>
+            </p>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <img class="img-fluid" src="/public/images/home.jpg" alt="home">
+            </div>
+            <div class="col-md-6">
+                <h2 class="mb-4">Our Products</h2>
+                <p>Explore our extensive range of fresh produce, groceries, and household essentials. From fruits and vegetables to pantry staples and cleaning supplies, we've got you covered.</p>
+                <p>Shop with confidence knowing that our products are sourced from trusted suppliers and undergo rigorous quality checks to ensure freshness and safety.</p>
+                <a class="btn btn-success" href="/products" role="button">Browse products</a>
+            </div>
+        </div>
+    </div>
+    <%- include('partials/footer.ejs') %>
+    <!-- Add Bootstrap JS (Optional, if needed) -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

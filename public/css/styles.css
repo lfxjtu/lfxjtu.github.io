@@ -5,8 +5,127 @@ p {
     color:black;
 }
 .img2 {
-     max-width: 5000px;
+     width: 1000px;
      margin-left: auto;
      margin-right: auto;
      
+    }
+
+img.thumbnail {
+        width: 50px; /* Adjust the size of the thumbnail as needed */
+        height: auto;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+    }
+
+    form,label {
+        max-width: 100%;
+    }
+    
+    .container {
+        max-width: 90%;
+        margin: 0 auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+        margin-top: 50px; 
+    }
+    
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+    }
+    
+    th, td {
+        padding: 15px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+        background-color: #007bff;
+        color: #fff;
+    }
+    
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-right: 5px;
+    }
+    
+    .btn:hover {
+        background-color: #0056b3;
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .confirmation-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        text-align: center;
+    }
+    /* Center the buttons */
+    .confirmation-popup button {
+        margin: 10px; /* Add some spacing between buttons */
+    }
+
+    /* Center the buttons using flexbox */
+    .confirmation-popup button#confirmDelete,
+    .confirmation-popup button#cancelDelete {
+        display: inline-block; /* Ensure buttons are in the same line */
+    }
+
+    .confirmation-popup button#confirmDelete {
+        margin-right: auto; /* Push "Yes" button to the left */
+    }
+
+    .confirmation-popup button#cancelDelete {
+        margin-left: auto; /* Push "No" button to the right */
+    }
+
+    footer {
+        margin-top: 20px; /* Add some space between the container and the footer */
+        text-align: center;
+        background-color: #f0f0f0;
+        padding: 20px 0;
+    }
+
+    footer a {
+        text-decoration: none;
+        color: #333;
+        margin: 0 10px;
     }

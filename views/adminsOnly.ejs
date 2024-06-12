@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/header1.ejs') %> 
+    <title>Admin Page</title>
+    <style>
+        .container {
+            margin: 20px;
+        }
+        h1 {
+            color: red;
+        }
+        p {
+            color: blue;
+        }
+        a {
+            color: blue;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+    <body>
+        <div class="container">
+            <%- include('partials/navbarAdmin.ejs') %> 
+            <h1 style="color:red">Administrators only page.</h1>
+            <p style="color:blue">
+            Welcome <strong><%= username.toUpperCase() %> </strong> to the admins only page. You are now logged in.
+            <% if (role == 'customerManager') { %>
+                <p>As a customer manager, you can: </p>
+                <ul>
+                    <li><a href="/addCustomers">Add a customer</a></li>
+                    <li><a href="/manageCustomers">Manage existing customers: update/delete</a></li>
+                </ul>
+                <% } else if (role == 'productManager') { %>
+                    <p>As a product manager, you can: </p>
+                    <ul>
+                        <li><a href="/addProduct">Add a product</a></li>
+                        <li><a href="/manageProducts">Manage existing products: update/delete</a></li>
+                    </ul>
+                <% } else if (role == 'boss') { %>
+                    <p>As a boss, you can: </p>
+                    <ul>
+                        <li><a href="/addCustomers">Add a customer</a></li>
+                        <li><a href="/manageCustomers">Manage existing customers: update/delete</a></li>
+                        <li><a href="/addProducts">Add a product</a></li>
+                        <li><a href="/manageProducts">Manage existing products: update/delete</a></li>
+                    </ul>
+                <% } else { %>
+                    <p>You do not have access to any management functions.</p>
+                <% } %>
+        </div>
+    </body>
+</html>
