@@ -27,6 +27,16 @@ const authenticate = (req, res, next) => {
     }
 };
 
+// Authentication for admin
+
+const authenticateAdmin = (req, res, next) => {
+    if (req.session.loggedinAdmin) {
+        next();
+    } else {
+        res.send('Please login to view this page!');
+    }
+};
+
 // Set storage engine for multer
 const storage = multer.diskStorage({
     destination: './public/images/',
@@ -231,23 +241,18 @@ app.post('/customerRegister', (req, res) => {
 
 // Render customer Profile Page
 app.get('/customerProfile', authenticate, (req, res) => {
-    if (req.session.loggedin) {
-        const customerData = req.session.customer;
-        const customerLoyaltyId = customerData.loyaltyId;
-        const sql = `SELECT level, discount from loyalty where loyaltyId = ?`;
-        conn.query(sql, customerLoyaltyId, (err, result) => {
-            if (err) throw err;
-            loyalty = result[0].level;
-            discount = result[0].discount;
-            customerData['loyalty'] = loyalty;
-            customerData['discount'] = discount;
-            res.render('customerProfile', { customer: customerData });
-
-        })
-    } else {
-        // Redirect to login page or handle unauthorized access
-        res.redirect('/login');
-    }
+    const customerData = req.session.customer;
+    const customerLoyaltyId = customerData.loyaltyId;
+    const sql = `SELECT level, discount from loyalty where loyaltyId = ?`;
+    conn.query(sql, customerLoyaltyId, (err, result) => {
+        if (err) throw err;
+        loyalty = result[0].level;
+        discount = result[0].discount;
+        customerData['loyalty'] = loyalty;
+        customerData['discount'] = discount;
+        res.render('customerProfile', { customer: customerData });
+    })
+    
 });
 
 // admin module
@@ -265,7 +270,7 @@ app.post('/adminAuth', (req, res) => {
         conn.query('SELECT * FROM admin WHERE name = ? AND password = PASSWORD(?)', [name, password], (error, results, fields) => {
             if (error) throw error;
             if (results.length > 0) {
-                req.session.loggedin = true;
+                req.session.loggedinAdmin = true;
                 req.session.username = name;
                 req.session.role = results[0].role;
                 res.redirect('/adminsOnly');
@@ -280,7 +285,7 @@ app.post('/adminAuth', (req, res) => {
 });
 
 // Admin can access this if they are logged in
-app.get('/adminsOnly', authenticate, (req, res) => {
+app.get('/adminsOnly', authenticateAdmin, (req, res) => {
     res.render('adminsOnly', {
         username: req.session.username,
         role: req.session.role
@@ -288,18 +293,18 @@ app.get('/adminsOnly', authenticate, (req, res) => {
 });
 
 // Add a customer
-app.get('/addCustomers', authenticate, (req, res) => {
+app.get('/addCustomers', authenticateAdmin, (req, res) => {
     res.render('addCustomers');
 });
 
-app.post('/addCustomers', authenticate, (req, res) => {
-    let newCustomerId = 0;
-    conn.query("SELECT MAX(id) as maxId FROM customers", (err, result) => {
-        if (err) throw err;
-        newCustomerId = result[0].maxId + 1;
-        const { name, password, phone, balance } = req.body;
-        const sql = `INSERT INTO customers (id, name, password, phone, balance) VALUES (?, ?, ?, ?, ?)`;
-        conn.query(sql, [newCustomerId, name, password, phone, balance], (err, result) => {
+app.post('/addCustomers', authenticateAdmin, (req, res) => {
+     const { name, password, phone, balance } = req.body;
+     
+     //Hash password for new customer
+     bcrypt.hash(password, 10, (err, hash) =>{
+        if(err) throw err;
+        const sql = `INSERT INTO customers (name, password, phone, balance) VALUES (?, ?, ?, ?)`;
+        conn.query(sql, [name, hash, phone, balance], (err, result) => {
             if (err) throw err;
             console.log('record inserted');
             res.redirect('manageCustomers');
@@ -308,7 +313,7 @@ app.post('/addCustomers', authenticate, (req, res) => {
 });
 
 // Update a customer
-app.get('/updateCustomers', authenticate, function (req, res, next) {
+app.get('/updateCustomers', authenticateAdmin, function (req, res, next) {
     conn.query(`SELECT * FROM loyalty`, (err, result) =>{
         if (err) throw err;
         let loyalties = result;
@@ -322,7 +327,7 @@ app.get('/updateCustomers', authenticate, function (req, res, next) {
     })
 });
 
-app.post('/updateCustomers', authenticate, (req, res) => {
+app.post('/updateCustomers', authenticateAdmin, (req, res) => {
     let id = req.query.id;
     console.log('id to be updated: ', req.query.id);
     const { name, phone, balance, loyaltyId } = req.body;
@@ -336,7 +341,7 @@ app.post('/updateCustomers', authenticate, (req, res) => {
 });
 
 // List all the customers
-app.get('/manageCustomers', authenticate, (req, res) => {
+app.get('/manageCustomers', authenticateAdmin, (req, res) => {
     conn.query("SELECT * FROM customers", (err, result) => {
         if (err) throw err;
         console.log(result);
@@ -345,22 +350,18 @@ app.get('/manageCustomers', authenticate, (req, res) => {
 });
 
 // Delete a customer
-app.get('/deleteCustomer', function (req, res, next) {
-    if (req.session.loggedin) {
-        let customerId = req.query.id;
-        conn.query("DELETE FROM customers WHERE id = ?", customerId, function (err, result) {
-            if (err) throw err;
-            res.redirect('/manageCustomers');
+app.get('/deleteCustomer', authenticateAdmin, function (req, res, next) {
+    let customerId = req.query.id;
+    conn.query("DELETE FROM customers WHERE id = ?", customerId, function (err, result) {
+        if (err) throw err;
+        res.redirect('/manageCustomers');
         });
-    } else {
-        res.send('Please login to view this page!');
-    }
 });
 
 //TODO manage products
 
 // Add a product
-app.get('/addProduct', authenticate, (req, res) => {
+app.get('/addProduct', authenticateAdmin, (req, res) => {
     conn.query(`SELECT * FROM categories`, function (err, result){
         if (err) throw err;
         res.render('addProduct', { title: 'Add a product', categories: result, errorMessage: null});
@@ -368,7 +369,7 @@ app.get('/addProduct', authenticate, (req, res) => {
     })
 });
 
-app.post('/addProduct', authenticate, (req, res) => {
+app.post('/addProduct', authenticateAdmin, (req, res) => {
     upload(req, res, (err) => {
         if (err) {
             conn.query(`SELECT * FROM categories`, function (err, result){
@@ -400,7 +401,7 @@ app.post('/addProduct', authenticate, (req, res) => {
     })
 });
 
-app.get('/manageProducts', authenticate, (req, res) => {
+app.get('/manageProducts', authenticateAdmin, (req, res) => {
     conn.query("SELECT * FROM products", (err, result) => {
         if (err) throw err;
         console.log(result);
@@ -409,20 +410,17 @@ app.get('/manageProducts', authenticate, (req, res) => {
 });
 
 // Delete a product
-app.get('/deleteProduct', function (req, res, next) {
-    if (req.session.loggedin) {
-        let productId = req.query.id;
-        conn.query("DELETE FROM products WHERE id = ?", productId, function (err, result) {
-            if (err) throw err;
-            res.redirect('/manageProducts');
-        });
-    } else {
-        res.send('Please login to view this page!');
-    }
+app.get('/deleteProduct', authenticateAdmin, function (req, res, next) {
+ 
+    let productId = req.query.id;
+    conn.query("DELETE FROM products WHERE id = ?", productId, function (err, result) {
+        if (err) throw err;
+        res.redirect('/manageProducts');
+    });
 });
 
 // Update a product
-app.get('/updateProducts', authenticate, function (req, res, next) {
+app.get('/updateProducts', authenticateAdmin, function (req, res, next) {
     conn.query(`SELECT * FROM categories`, function (err, result){
         if (err) throw err;
         let categories = result;
@@ -435,7 +433,7 @@ app.get('/updateProducts', authenticate, function (req, res, next) {
     }) 
 });
 
-app.post('/updateProducts', authenticate, (req, res) => {
+app.post('/updateProducts', authenticateAdmin, (req, res) => {
     let id = req.query.id;
     upload(req, res, (err) => {
         if (err) {
