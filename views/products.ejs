@@ -45,13 +45,13 @@
                                         <p class="card-text">
                                             <strong>Name:</strong> <%= product.name %><br>
                                             <strong>Stock:</strong> <%= product.stock %><br>
-                                            <strong>Price:</strong> 
+                                            <strong>Price: </strong> 
                                                 <% if (data.customerDiscount !=1) { %>
-                                                    <del><%= product.price %></del>
-                                                    <strong style="color: red"> <%=discountPrice %></strong>
+                                                    <del>$<%= product.price %></del>
+                                                    <strong style="color: red"> $<%=discountPrice %></strong>
                                                     <img src="/public/images/special.jpg" style="height: 40px; width: auto;"></img>
                                                     <% } else { %>
-                                                        <%= product.price %>
+                                                        $<%= product.price %>
                                                         <% } %>
                                                 </label>
                                             <br>
