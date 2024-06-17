@@ -87,7 +87,7 @@
                     <% if (productsData.categories.length != 0) { %>
                         <% let categories = productsData.categories; %>
                         <% categories.forEach((category) => { %>
-                            <option value="<%= category.id %>" <%= category.id === productsData.product.categoryId ? 'selected' : '' %>><%= category.name %></option>
+                            <option value="<%= category.id %>" <%= category.id === productsData.product.categoryId ? 'selected' : '' %>><%= category.id %> - <%= category.name %></option>
                             <% })}; %>
                 </select>                
                 <label for="imageFile">Select an image from your local machine</label>

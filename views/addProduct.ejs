@@ -71,7 +71,7 @@
     <body>
         <%- include('partials/navbar4.ejs') %>
         <div class="container" style="max-width: 500px;">
-            <h1>Add a New Product</h1>
+            <h1>Add New Product</h1>
             <% if (errorMessage) { %>
                     <div class="error"><%= errorMessage %></div>
             <% } %>
@@ -88,7 +88,7 @@
                 <select id="categoryId" name="categoryId">
                     <% if (categories.length != 0) { %>
                         <% categories.forEach((category) => { %>
-                            <option value="<%= category.id %>"><%= category.name %></option>
+                            <option value="<%= category.id %>"><%= category.id %> - <%= category.name %></option>
                     <% })}; %>
                 </select>                
                 <label for="imageFile">Select an image from your local machine</label>

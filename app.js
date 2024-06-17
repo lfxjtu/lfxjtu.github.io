@@ -342,7 +342,11 @@ app.post('/updateCustomers', authenticateAdmin, (req, res) => {
 
 // List all the customers
 app.get('/manageCustomers', authenticateAdmin, (req, res) => {
-    conn.query("SELECT * FROM customers", (err, result) => {
+    // Query to show all customers joint with loyalty assocated
+    const customersQuery =
+    "SELECT customers.*, loyalty.* FROM customers INNER JOIN loyalty on customers.loyaltyId = loyalty.loyaltyId";
+
+    conn.query(customersQuery, (err, result) => {
         if (err) throw err;
         console.log(result);
         res.render('manageCustomers', { title: 'List of GG customers', CustomersData: result });
@@ -402,7 +406,11 @@ app.post('/addProduct', authenticateAdmin, (req, res) => {
 });
 
 app.get('/manageProducts', authenticateAdmin, (req, res) => {
-    conn.query("SELECT * FROM products", (err, result) => {
+    // Prepare products data table from products table and category table
+    const productDataQuery =
+    "SELECT products.*, categories.name AS category FROM products INNER JOIN categories WHERE products.categoryId = categories.id";
+
+    conn.query(productDataQuery, (err, result) => {
         if (err) throw err;
         console.log(result);
         res.render('manageProducts', { title: 'List of GG Products', ProductsData: result });

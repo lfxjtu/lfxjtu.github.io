@@ -15,7 +15,7 @@
                     <th>Stock</th>
                     <th>Price</th>
                     <th>Unit</th>
-                    <th>Category ID</th>
+                    <th>Category</th>
                     <th>Image</th>
                     <th>Action</th>
                 </tr>
@@ -29,7 +29,7 @@
                             <td><%= data.stock %></td>
                             <td>$<%= data.price %></td>
                             <td><%= data.unit %></td>
-                            <td><%= data.categoryId %></td>
+                            <td><%= data.categoryId %> - <%= data.category %></td>
                             <td><img src="<%= data.imageUrl %>" alt="<%= data.name %>" class="thumbnail"></td>
                             <td>
                                 <a href="/updateProducts?id=<%= data.id %>" class="btn">Update</a>

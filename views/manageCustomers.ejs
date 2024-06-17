@@ -14,7 +14,8 @@
                     <th>Name</th>
                     <th>Phone</th>
                     <th>Balance</th>
-                    <th>Loyalty</th>
+                    <th>Loyalty Level</th>
+                    <th>Discount</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -26,7 +27,8 @@
                             <td><%= data.name %></td>
                             <td><%= data.phone %></td>
                             <td>$<%= data.balance %></td>
-                            <td><%= data.loyaltyId %></td>
+                            <td><%= data.loyaltyId %> - <%= data.level %></td>
+                            <td><%= data.discount %></td>
 
                             <td>
                                 <a href="/updateCustomers?id=<%= data.id %>" class="btn">Update</a>

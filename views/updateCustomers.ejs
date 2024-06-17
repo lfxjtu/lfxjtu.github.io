@@ -85,7 +85,7 @@
                 <select id="loyaltyId" name="loyaltyId">
                     <% if (loyalties != 0) { %>
                         <% loyalties.forEach((loyalty) => { %>
-                            <option value="<%= loyalty.loyaltyId %>" <%= customer.loyaltyId === loyalty.loyaltyId ? 'selected' : '' %>><%= loyalty.level %></option>
+                            <option value="<%= loyalty.loyaltyId %>" <%= customer.loyaltyId === loyalty.loyaltyId ? 'selected' : '' %>><%= loyalty.loyaltyId %> - <%= loyalty.level %></option>
                         <% })} %>
                 </select>
                 <input type="submit"></input>
