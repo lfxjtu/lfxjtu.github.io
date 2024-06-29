@@ -4,6 +4,9 @@ const conn = require('./dbConfig');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
 
@@ -68,7 +71,6 @@ function checkFileType(file, cb) {
     }
 }
 
-
 // Routes
 app.get('/', (req, res) => {
     res.render("home");
@@ -88,7 +90,7 @@ app.get('/products', (req, res) => {
 
         // Query to select all products
         const productsQuery = 
-            "SELECT products.*, categories.name AS category FROM products RIGHT JOIN categories on products.categoryId = categories.id";
+            "SELECT products.*, categories.name AS category FROM products INNER JOIN categories on products.categoryId = categories.id";
 
         conn.query(productsQuery, (err, productsResult) => {
             if (err) throw err;
@@ -169,6 +171,57 @@ app.post('/customerAuth', (req, res) => {
     } else {
         res.status(400).send('Please enter Username and Password!');
     }
+});
+
+app.get('/forgot-password', (req, res) => {
+    res.render('forgot-password');
+});
+
+// In-memory store for reset tokens (use a database in production)
+const resetTokens = {};
+
+app.post('/forgot-password', (req, res) => {
+    const { email } = req.body;
+    // Verify the email exists in your database
+    // This example assumes a fßunction getUserByEmail exists
+    conn.query("SELECT * FROM customers WHERE email = ?",[email], (err, result) => {
+        if (err) throw err;
+        if (result.length == 0) {
+            return res.status(400).send('No user with that email');
+        } else {
+            // Generate a token
+            const token = crypto.randomBytes(32).toString('hex');
+            const tokenExpiry = Date.now() + 3600000; // 1 hour
+
+            // Store the token and expiry in your database
+            resetTokens[token] = { email, expiry: tokenExpiry };
+
+            // Send the email
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                }
+            });
+
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: 'Password Reset',
+                text: `You requested a password reset. Please click the following link to reset your password: 
+                http://localhost:3000/reset-password/${token}`
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    return res.status(500).send('Error sending email');
+                }
+                res.send('Password reset email sent');
+            });
+        }
+    })
+
 });
 
 
